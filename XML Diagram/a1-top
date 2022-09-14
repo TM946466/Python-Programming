@@ -1,0 +1,86 @@
+#!/bin/bash
+ 
+if [[ -n "$1" ]]; then #Check for user directory desire and move there
+	cd "$1"
+fi
+
+for f in $(find . -type d) ; do #Recursivly traverse directories
+	myVar="${f#*.}" #Path formatting
+	readMe="$PWD$myVar/README" #Path formatting
+	curDir="$PWD$myVar" #Path formatting	
+	
+	if [ -e "$curDir/dir.xml" ] ; then #Check for existance of dir.xml file and remove
+		rm "$curDir/dir.xml"
+	fi
+	echo '<?xml version="1.0" encoding="ISO-8859-1"?> ' >>  "$curDir/dir.xml" #xml file header
+	echo "<direntry>" >> "$curDir/dir.xml" #xml file header
+	
+	
+	
+	if [[ -e "$readMe" ]]; then #If a README exists in this directory assign its contents to index and req respectivly
+		
+		index=$(awk -F: '$1=="index" { print $2 }'  "$readMe")
+		req=$(awk -F: '$1=="required" { for ( i=2; i<=NF; i++)  print $i}' "$readMe")
+	fi
+	echo "	<index>" >> "$curDir/dir.xml" #Prints index header in xml file
+
+	
+	for i in $curDir/* ; do #Scan current directory
+		
+		h="${i#*$curDir}" #Path formatting
+		j="${h#*/}"	  #Path formatting
+		if echo $index | grep -q "$j" ; then #Check if directory contents match index list
+			
+			if [[ -d "$i" ]]; then #If current path is a directory print to xml file to match directory formatting
+				echo "		<dir>$j</dir>" >> "$curDir/dir.xml" 
+			else
+				echo "		<file>$j</file>" >> "$curDir/dir.xml" #If current path is not a directory use file format
+			fi		         
+                        
+		fi
+		
+	done			 
+	echo "	</index>" >> "$curDir/dir.xml" #print index tail to xml file
+	echo "  	<required>" >> "$curDir/dir.xml" #Print required header to xml file
+	
+        for i in $curDir/* ; do #Scan current directory
+
+                h="${i#*$curDir}"
+                j="${h#*/}" 
+                if echo $req | grep -q "$j" ; then #Check for match between path and required list from README
+                        
+                        if [[ -d "$i" ]]; then #Send to xml file formatted as a directory
+                                echo "          <dir>$j</dir>" >> "$curDir/dir.xml"
+                        else
+                                echo "		<file>$j</file>" >> "$curDir/dir.xml" #Send to xml file with file format
+                        fi      
+                        
+                fi
+                
+        done                     
+        echo "	</required>" >> "$curDir/dir.xml"#Prints required tail
+	echo "	<other>" >> "$curDir/dir.xml"#Prints other head
+
+
+        for i in $curDir/* ; do #Scan current directory
+
+                h="${i#*$curDir}"
+                j="${h#*/}"
+                if ! ( echo $index | grep -q "$j"  ||  echo $req | grep -q "$j" );  then #Check for no match to req or index list
+                        
+                        if [[ -d "$i" ]]; then
+                                echo "          <dir>$j</dir>" >> "$curDir/dir.xml" #Print in directory format to xml file
+                        else
+                        	if [ "$j" == "dir.xml" ]; then #do not include dir.xml in the directory
+					continue
+				else
+				    echo "		<file>$j</file>" >> "$curDir/dir.xml"#Print in file format to xml file
+                       		fi
+			 fi      
+                        
+                fi
+                
+        done                     
+        echo "	</other>" >> "$curDir/dir.xml" #Print other xml tail     		
+	echo "</direntry>" >> "$curDir/dir.xml"#Print direntry xml tail
+done

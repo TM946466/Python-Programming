@@ -1,0 +1,15 @@
+This program takes space seperated infix equations and converts them into postfix form.
+
+
+File Entry:
+
+The application will take a file name through the command line if it is given one. 
+The file given must not have equations seperated by blank lines or it will
+run the first results for the first line of the file and then revert to its Open Ended Entry format.
+
+Open Ended Entry:
+
+If no file name is given through the command line the program will operate in its Open Ended Entry format.
+In this format space seperated infix equations can be fed directly to the application by a user,
+The user wil be prompted to enter an infix equation and upon entry will be given the equation 
+in its post fix form followed by the integer solution to the equation.

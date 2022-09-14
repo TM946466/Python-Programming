@@ -1,0 +1,333 @@
+#!/usr/bin/env python3
+
+import sys
+
+class assn4:
+
+	def __init__ ( self, input ):
+		
+		#Initialize currency types
+		ones = 0
+		fives = 0
+		tens = 0
+		twentys = 0
+		
+		try:
+			#Find position of equal in list
+			equalPos = input.index('=')	
+			#Break up list around equal position
+			lhs = input[1:equalPos]
+			rhs = input[(equalPos + 1):]
+		except ValueError:
+			sys.exit(1)
+		#Check for valid left hand side input
+		if len(lhs) != 1 or lhs[0] == '':
+			sys.exit(1)
+		else:
+			try:#Test for correct input
+				lhsTotal = int(lhs[0])
+			except ValueError:
+				sys.exit(1)
+		
+		
+		#Calculate RHS
+		try:
+			ones = int( 1 * int(rhs[0]))
+			fives = int( 5 * int(rhs[1]))
+			tens = int( 10 * int(rhs[2]))
+			twentys = int( 20 * int(rhs[3]))
+		except IndexError:
+			sys.exit(1)
+		except ValueError:
+			sys.exit(1)
+		#Check for negatives
+		if (ones < 0) or (fives < 0) or (tens < 0) or (twentys < 0):
+			sys.exit(1)
+
+		rhsSum = int(ones + fives + tens + twentys)
+		#Check LHS RHS mismatch
+		if lhsTotal != rhsSum:
+			sys.exit(2)
+		#Write to file
+		with open("register", "w") as register:
+			for i in lhs:
+				register.write(i)
+				register.write(" ")
+			register.write("\n")
+			for x in rhs:
+				register.write(x)	
+				register.write(" ")
+			register.write("\n")
+			register.write("0")	
+		sys.exit(0) #Correctly ran exit code
+	def purchase (input):
+		#Try to open file if it doesn't exist throw error code
+		try:
+			with  open("register") as f:
+				lhs = f.readline()
+				rhs = f.readline()
+				curEarn = f.readline()
+		except FileNotFoundError:
+			sys.exit(4)
+		Rhs = rhs.split()
+		#Check for valid user input
+		try:
+			curEarn = int(curEarn)
+			ones = int(Rhs[0])
+			fives = int(Rhs[1])
+			tens = int(Rhs[2])
+			twentys = int(Rhs[3])
+			lhs = int(lhs)
+			amtPaid = sys.argv[1]
+		except IndexError:
+			sys.exit(1)
+		except ValueError:
+			sys.exit(1)
+		#Initialize variables to be used
+		intAmtPaid = 0
+		dueTwenty = 0
+		dueTen = 0
+		dueFive = 0
+		dueChange = 0	
+		pOnes = 0
+		pFives = 0
+		pTens = 0
+		pTwentys = 0
+		#Check fr valid equal entry
+		try:
+			#Find position of equal in list
+			equalPos = input.index('=')
+			#Break up list around equal position
+			amtPaid = input[1:equalPos]
+			billsPaid = input[(equalPos + 1):]
+		except ValueError :
+			sys.exit(1)
+		#Test for valid data
+		try:
+			intAmtPaid = int(amtPaid[0])
+		except ValueError:
+			sys.exit(1)
+		#Test for valid data
+		try:
+			pOnes = int( 1 * int(billsPaid[0]))
+			ones += int(billsPaid[0])
+			pFives = int( 5 * int(billsPaid[1]))
+			fives += int(billsPaid[1])
+			pTens = int( 10 * int(billsPaid[2]))
+			tens += int(billsPaid[2])
+			pTwentys = int( 20 * int(billsPaid[3]))
+			twentys += int(billsPaid[3])
+		except IndexError:
+			sys.exit(1)
+		except ValueError:
+			sys.exit(1)
+		#Check for negatives
+		if (pOnes < 0) or (pFives < 0) or (pTens < 0) or (pTwentys < 0):
+			sys.exit(1)
+		#Sum Right Hand Side
+		rhsSum = int(pOnes + pFives + pTens + pTwentys)
+		#Check for valid entry
+		if int(amtPaid[0]) <= int(rhsSum):
+			
+			dueChange = (rhsSum - intAmtPaid)
+			#Falls down chain to get correct change if available if not throws error code 3
+			if dueChange >= 20:
+				dueTwenty = int(dueChange / 20)
+				residual = (dueChange % 20)
+				if dueTwenty <= twentys:
+					dueChange = residual
+			if dueChange >= 10:
+				dueTen = int(dueChange / 10)
+				residual = (dueChange % 10)
+				if dueTen <= tens:
+					dueChange = residual
+			if dueChange >= 5:
+				dueFive = int(dueChange / 5)
+				residual = (dueChange % 5)
+				if dueFive <= fives:
+					dueChange = residual
+			if dueChange >= 1:
+						
+				if dueChange > ones:
+					sys.exit(3)
+				
+			#Decriment file variables	
+			twentys -= dueTwenty
+			tens -= dueTen
+			fives -= dueFive
+			ones -= dueChange	
+			#Incrimen other file varialbles
+			lhs += intAmtPaid
+			curEarn += intAmtPaid 	
+			#Write to file
+			with open("register", "w") as register:
+				register.write(str(lhs))
+				register.write("\n")
+				register.write(str(ones))
+				register.write(" ")
+				register.write(str(fives))
+				register.write(" ")
+				register.write(str(tens))
+				register.write(" ")
+				register.write(str(twentys))
+				register.write("\n")
+				register.write(str(curEarn))
+		#Print output for user
+		print(dueChange,dueFive,dueTen,dueTwenty)
+		sys.exit(0)
+	def change(input):
+		#Check for file and open if it exists
+		try:
+			with  open("register") as f:
+				lhs = f.readline()
+				rhs = f.readline()
+		except FileNotFoundError:
+			sys.exit(4)
+		Rhs = rhs.split()
+		#Check for valid entry
+		try:
+			ones = int(Rhs[0])
+			fives = int(Rhs[1])
+			tens = int(Rhs[2])
+			twentys = int(Rhs[3])
+			lhs = int(lhs)
+		except ValueError:
+			sys.exit(1)
+		except IndexError:
+			sys.exit(1)
+		
+		
+		#Variable initialization
+		cOnes = 0
+		cFives = 0
+		cTens = 0
+		cTwentys = 0
+
+		reqOnes = 0
+		reqFives = 0
+		reqTens = 0
+		reqTwentys = 0
+
+		onesRet = 0
+		fivesRet = 0
+		tensRet = 0
+		twentysRet = 0
+		#Find position of equal in list
+		try:
+			equalPos = input.index('=')
+			billsToChange = input[1:equalPos]
+			billsRequired = input[(equalPos + 1):]
+		except ValueError:
+			sys.exit(1)
+		#Try to fill in missing data with 0 or given data		
+		try:
+			if len(billsToChange) <= 0:
+				sys.exit(1)
+			elif len(billsToChange) == 1:
+				cOnes = int(billsToChane[0])
+			elif len(billsToChange) == 2:
+				cOnes = int(billsToChange[0])
+				cFives = int(billsToChange[1])
+			elif len(billsToChange) == 3:
+				cOnes = int(billsToChange[0])
+				cFives = int(billsToChange[1])
+				cTens = int(billsToChange[2])
+			elif len(billsToChange) == 4:
+				cOnes = int(billsToChange[0])
+				cFives = int(billsToChange[1])
+				cTens = int(billsToChange[2])
+				cTwentys = int(billsToChange[3])
+			else:
+				sys.exit(1)
+		except ValueError:
+			sys.exit(1)
+		#Check for negative entry
+		if (cOnes < 0) or (cFives < 0) or (cTens < 0) or (cTwentys < 0):
+			sys.exit(1)	
+		#Check for valid entry
+		try:
+			if len(billsRequired) <= 0:
+				sys.exit(1)
+			elif len(billsRequired) == 1:
+				reqOnes = int(billsRequired[0])
+			elif len(billsRequired) == 2:
+				reqOnes = int(billsRequired[0])
+				reqFives = int(billsRequired[1])
+			elif len(billsRequired) == 3:
+				reqOnes = int(billsRequired[0])
+				reqFives = int(billsRequired[1])
+				reqTens = int(billsRequired[2])
+			elif len(billsRequired) == 4:
+				reqOnes = int(billsRequired[0])
+				reqFives = int(billsRequired[1])
+				reqTens = int(billsRequired[2])
+				reqTwentys = int(billsRequired[3])
+			else:
+				sys.exit(1)
+		except ValueError:
+			sys.exit(1)
+		#Check for negative entry
+		if (reqOnes < 0) or (reqFives < 0) or (reqTens < 0) or (reqTwentys < 0):
+			sys.exit(1)
+		#Check for valid entry													
+		if (reqOnes > ones) or (reqFives > fives) or (reqTens > tens) or (reqTwentys > twentys):
+			sys.exit(3)
+			
+		else:
+			#Increase/Decrease file variables
+			print(reqOnes,reqFives,reqTens,reqTwentys)
+			ones -= reqOnes
+			fives -= reqFives
+			tens -= reqTens
+			twentys -= reqTwentys
+			ones += cOnes
+			fives += cFives
+			tens += cTens
+			twentys += cTwentys	
+			#Write to file
+			with open("register", "w") as register:
+				register.write(str(lhs))
+				register.write("\n")
+				register.write(str(ones))
+				register.write(" ")
+				register.write(str(fives))
+				register.write(" ")
+				register.write(str(tens))
+				register.write(" ")
+				register.write(str(twentys))
+			sys.exit(0)
+	def report():
+		#Try to open file if it exists open it and display information in form
+		try:
+			with  open("register") as f:
+				lhs = f.readline()
+				rhs = f.readline()
+				curEarn = f.readline()
+			lhs = lhs.strip("\n")
+			rhs = rhs.strip("\n")	
+			print(curEarn,':',lhs,'=',rhs)	
+		except FileNotFoundError:
+			sys.exit(4)
+		sys.exit(0)
+	
+if __name__ == '__main__' :
+	
+	uInput = []
+	if sys.argv[1] == 'init':
+
+		for x in range(1, len(sys.argv)) :
+			uInput.append(sys.argv[x])
+		assn4(uInput) 
+	elif sys.argv[1] == 'purchase':
+		for x in range(1, len(sys.argv)):
+			uInput.append(sys.argv[x])
+		assn4.purchase(uInput)
+	elif sys.argv[1] == 'change':
+		for x in range(1, len(sys.argv)):
+			uInput.append(sys.argv[x])
+		assn4.change(uInput)
+	elif sys.argv[1] == 'report':
+		assn4.report()
+	else:
+		sys.exit(1)
+

@@ -1,0 +1,166 @@
+#!/bin/bash
+
+asn4="python3 assn4"
+
+################Test init##############################
+
+#Test Normal Functionality
+#Expect init to take entry
+$asn4 init 36 = 1 1 1 1
+if [ "$?" != 0 ] ; then
+	echo "Init Malfunction"
+fi
+
+
+#Test if nothing is sent to init
+#Expect error 1
+$asn4 init 
+if [ "$?" != 1 ] ; then
+	echo "Init Malfunction No Data"
+fi
+
+#Test if init is fed negative numbers
+#Expect error 1
+$asn4 init -36 = -1 -1 -1 -1
+if [ "$?" != 1 ] ; then
+	echo "Init Malfunction Negatives"
+fi
+
+#Test for non-numeric symbols
+#Expect error one
+$asn4 init cat = c a t
+if [ "$?" != 1 ] ; then
+	echo "Init Malfunction Non-Numeric Symbol"
+fi
+
+#Test for init Bills != Total
+#Expect error 2
+$asn4 init 10 = 1 1 1 1 
+if [ "$?" != 2 ] ; then
+	echo "Init Malfunction Bills not equal to Total"
+fi
+
+################Test purchase##############################
+
+#Test Normal Functionality
+#Expect output 1 0 0 0
+$asn4 purchase 39 = 0 0 0 2
+if [ "$?" != 0 ] ; then
+	echo "Purchase Malfunction"
+fi
+
+#Test for negative numbers
+#Expect error 1
+$asn4 purchase -39 = 0 0 0 -2
+if [ "$?" != 1 ] ; then
+	echo "Purchase Malfunction Negatives"
+fi
+
+#Test for non-entry
+#Expect error 1
+$asn4 purchase 
+if [ "$?" != 1 ] ; then
+	echo "Purchase Malfunction No Data"
+fi
+
+#Test non-numeric entry
+#Expect error 1
+$asn4 purchase cat = c a t
+if [ "$?" != 1 ] ; then
+	echo "Purchase Malfunction Non-Numeric Entry"
+fi
+
+################Test change##############################
+
+#Test Normal Functionality
+#Expect output 5 0 0 0
+$asn4 init 41 = 6 1 1 1
+$asn4 change 0 1 0 0 = 5 0 0 0
+if [ "$?" != 0 ] ; then
+	echo "Change Malfunction"
+fi
+
+#Test for register not having change
+#Expect error 3
+$asn4 change 0 1 0 0 = 5 0 0 0
+if [ "$?" != 3 ] ; then
+	echo "Change Malfunction Not Enough Bills"
+fi
+
+#Test non entry
+#Expect error 1
+$asn4 change
+if [ "$?" != 1 ] ; then
+	echo "Change Malfunction Null Entry"
+fi
+
+#Test unconventional entry
+#Expect output 5 0 0 0
+$asn4 init 41 = 6 1 1 1
+$asn4 change 0 1 = 5
+if [ "$?" != 0 ] ; then
+	echo "Unconventional Entry Change Malfunction"
+fi
+
+#Test Non-Numeric Entry
+#Expect error 1
+$asn4 init 41 = 6 1 1 1
+$asn4 change a b = c 
+if [ "$?" != 1 ] ; then
+	echo "Change Malfunction Non-Numeric Entry"
+fi
+
+#Test for negative entry
+#Expect error 1
+$asn4 change 0 -1 = -5
+if [ "$?" != 1 ] ; then
+	echo "Change Malfunction Negative Entry"
+fi
+
+################Test report##############################
+#Test Basic Functionality
+#Expect output 0 : 41 = 6 1 1 1
+$asn4 report
+if [ "$?" != 0 ] ; then
+	echo "Report Malfunction"
+fi
+
+#Test report with earned value
+#Expect output 1 0 0 0
+#              39 : 75 = 0 1 1 3
+$asn4 init 36 = 1 1 1 1
+$asn4 purchase 39 = 0 0 0 2
+$asn4 report
+if [ "$?" != 0 ] ; then
+	echo "Report with earned Malfunction"
+fi
+
+#Test report with garbage entry following
+#Expect Output 39 : 75 = 0 1 1 3
+$asn4 report faljsbf 2123 %%
+if [ "$?" != 0 ] ; then
+	echo "Report Malfunction with garbage entry"
+fi
+
+################Test File Not Found #########################
+rm register
+#Test register FnF
+#Expect error  4
+$asn4 purchase 38 = 0 0 0 2
+if [ "$?" != 4 ] ; then
+        echo "File Not Found Error register"
+fi
+
+#Test change FnF
+#Expect error 4
+$asn4 change 0 0 0 0 = 0 0 0 0
+if [ "$?" != 4 ] ; then
+        echo "File Not Found Error change"
+fi
+
+#Test report FnF
+#Expect error 4
+$asn4 report
+if [ "$?" != 4 ] ; then
+        echo "File Not Found Error report"
+fi
